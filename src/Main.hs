@@ -31,8 +31,8 @@ data Coordinate = Coord { coordLat :: Latitude
 
 main :: IO ()
 main = S.withSession $ \sess -> do
-  let cache = Geocache "GC"
-      coord = Coord (Lat 50 2 1) (Lon 8 2 1)
+  let cache = Geocache "GC424EG"
+      coord = Coord (Lat 50 6 862) (Lon 8 25 433)
   checkerLink <- checker sess cache <&> listToMaybe
   for_ checkerLink $ \link -> do
     let checkerCode = CheckerCode (T.pack (urlParams link Map.! "code"))
