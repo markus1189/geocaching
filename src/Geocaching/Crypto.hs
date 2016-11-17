@@ -5,7 +5,7 @@ import           Data.Text (Text)
 import qualified Data.Text as T
 
 letterSum :: Text -> Int
-letterSum = T.foldl' (\acc x -> acc + letterValue x) 0
+letterSum = T.foldl' (\acc x -> acc + letterValue x) 0 . T.filter (/= ' ')
 
 letterValue :: Char -> Int
 letterValue c = ord (toLower c) - 96
