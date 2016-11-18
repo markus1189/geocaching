@@ -1,8 +1,13 @@
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Geocaching.Types where
 
-import Data.Text (Text)
-import Formatting
+import           Data.Either.Combinators (mapLeft)
+import           Data.Text (Text)
+import qualified Data.Text as T
+import           Formatting
+import qualified Text.Parsec as P
+import           Text.Parsec.Text
 
 data Latitude = Lat Int Int Int deriving (Show,Eq)
 data Longitude = Lon Int Int Int deriving (Show,Eq)
@@ -23,3 +28,18 @@ newtype Geocache = Geocache Text
 
 newtype Url = Url String
 newtype CheckerCode = CheckerCode Text
+
+parseCoord :: String -> Either String Coordinate
+parseCoord input = mapLeft show $ P.runParser p () "<none>" (T.pack input)
+  where p = Coord <$> parseGen 'N' Lat <*> (P.spaces *> P.optional (P.char ',') *> P.spaces *> parseGen 'E' Lon)
+
+parseGen :: Char -> (Int -> Int -> Int -> a) -> Parser a
+parseGen c mk = do
+  _ <- P.char c
+  _ <- P.spaces
+  d1 <- read <$> P.many P.digit
+  _ <- P.spaces
+  d2 <- read <$> P.many P.digit
+  _ <- P.char '.'
+  d3 <- read <$> P.many P.digit
+  return $ mk d1 d2 d3

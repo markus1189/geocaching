@@ -19,11 +19,12 @@ executable geocaching
   main-is:             Main.hs
   other-modules:       Geocaching.Types
                      , Geocaching.Checker
+                     , Geocaching.Crypto
   -- other-extensions:
-  build-depends:       attoparsec
-                     , base >=4.9 && <4.10
+  build-depends:       base >=4.9 && <4.10
                      , bytestring
                      , containers
+                     , either
                      , formatting
                      , lens
                      , optparse-applicative
