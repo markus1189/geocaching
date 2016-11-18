@@ -1,6 +1,14 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
-module Geocaching.Types where
+module Geocaching.Types (Coordinate(..)
+                        ,Latitude(..)
+                        ,Longitude(..)
+                        ,Geocache(..)
+                        ,Url(..)
+                        ,CheckerCode(..)
+                        ,parseCoord
+                        ,fmtLat
+                        ,fmtLon) where
 
 import           Data.Either.Combinators (mapLeft)
 import           Data.Text (Text)
