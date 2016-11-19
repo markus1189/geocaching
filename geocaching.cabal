@@ -17,9 +17,10 @@ cabal-version:       >=1.10
 
 executable geocaching
   main-is:             Main.hs
-  other-modules:       Geocaching.Types
-                     , Geocaching.Checker
+  other-modules:       Geocaching.Checker
                      , Geocaching.Crypto
+                     , Geocaching.Formula
+                     , Geocaching.Types
   -- other-extensions:
   build-depends:       base >=4.9 && <4.10
                      , bytestring

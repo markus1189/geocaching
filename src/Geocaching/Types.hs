@@ -38,16 +38,19 @@ newtype Url = Url String
 newtype CheckerCode = CheckerCode Text
 
 parseCoord :: String -> Either String Coordinate
-parseCoord input = mapLeft show $ P.runParser p () "<none>" (T.pack input)
-  where p = Coord <$> parseGen 'N' Lat <*> (P.spaces *> P.optional (P.char ',') *> P.spaces *> parseGen 'E' Lon)
+parseCoord input = mapLeft show $ P.runParser parser () "<none>" (T.pack input)
+  where parser = Coord
+             <$> parseGen P.digit 'N' Lat
+             <*> (pSkip *> parseGen P.digit 'E' Lon)
+        pSkip = P.spaces *> P.optional (P.char ',') *> P.spaces
 
-parseGen :: Char -> (Int -> Int -> Int -> a) -> Parser a
-parseGen c mk = do
+parseGen :: Parser Char -> Char -> (Int -> Int -> Int -> a) -> Parser a
+parseGen pDigit c mk = do
   _ <- P.char c
   _ <- P.spaces
-  d1 <- read <$> P.many P.digit
+  d1 <- read <$> P.many pDigit
   _ <- P.spaces
-  d2 <- read <$> P.many P.digit
+  d2 <- read <$> P.count 2 pDigit
   _ <- P.char '.'
-  d3 <- read <$> P.many P.digit
+  d3 <- read <$> P.count 3 pDigit
   return $ mk d1 d2 d3
