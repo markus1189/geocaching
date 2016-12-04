@@ -1,49 +1,51 @@
+{-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE OverloadedStrings #-}
 module Geocaching.Formula (expr,eval) where
 
-import           Data.Functor.Identity
+import           Control.Applicative (empty)
+import           Data.Functor (void)
 import           Data.Map (Map)
-import qualified Data.Map as Map
-import           Data.Maybe (fromMaybe)
-import           Text.Parsec
-import qualified Text.Parsec.Char as P
-import           Text.Parsec.Expr
-import           Text.Parsec.Language
-import           Text.Parsec.Token
 
-lang :: TokenParser st
-lang = haskell
-
-expr :: Stream String Identity Char => ParsecT String u Identity Expr
-expr = buildExpressionParser table term <?> "expression"
-
-table :: OperatorTable String u Identity Expr
-table = [[Prefix (Negate <$ reservedOp lang "-")]
-        ,[Infix (Mul <$ reservedOp lang "*") AssocLeft, Infix (Div <$ reservedOp lang "/") AssocLeft]
-        ,[Infix (Add <$ reservedOp lang "+") AssocLeft, Infix (Sub <$ reservedOp lang "-") AssocLeft]
-        ]
-
-term :: Stream String Identity Char => ParsecT String u Identity Expr
-term = (parens lang expr <|> brackets lang expr <|> braces lang expr) <|> Lit <$> natural lang <|> variable
-
-variable :: ParsecT String u Identity Expr
-variable = Var . pure <$> P.upper
+import           Text.Megaparsec
+import           Text.Megaparsec.Text
+import           Text.Megaparsec.Expr
+import qualified Text.Megaparsec.Lexer as L
 
 data Expr = Mul Expr Expr
           | Add Expr Expr
           | Sub Expr Expr
           | Div Expr Expr
+          | Negate Expr
           | Var String
           | Lit Integer
-          | Negate Expr
           deriving (Show,Eq)
 
+sc :: Parser ()
+sc = L.space (void spaceChar) lineCmnt empty
+  where lineCmnt  = L.skipLineComment "#"
+
+symbol :: String -> Parser String
+symbol = L.symbol sc
+
+expr :: Parser Expr
+expr = sc *> makeExprParser term table <?> "expression"
+
+term :: Parser Expr
+term = parens expr <|> (Lit <$> integer) <?> "term"
+
+integer :: Parser Integer
+integer = L.lexeme sc L.integer
+
+parens :: Parser a -> Parser a
+parens = between (symbol "(") (symbol ")")
+
+table :: [[Operator Parser Expr]]
+table = [[Prefix (Negate <$ symbol "-")]
+        ,[InfixL (Mul <$ symbol "*")]
+        ,[InfixL (Add <$ symbol "+")]
+        ,[InfixL (Sub <$ symbol "-")]
+        ,[InfixL (Div <$ symbol "/")]]
+
 eval :: Map String Integer -> Expr -> Either String Integer
-eval xs (Mul lhs rhs) = (*) <$> eval xs lhs <*> eval xs rhs
-eval xs (Add lhs rhs) = (+) <$> eval xs lhs <*> eval xs rhs
-eval xs (Div lhs rhs) = div <$> eval xs lhs <*> eval xs rhs
-eval xs (Sub lhs rhs) = (-) <$> eval xs lhs <*> eval xs rhs
-eval xs (Negate e) = negate <$> eval xs e
-eval _ (Lit i) = pure i
-eval xs (Var x) = fromMaybe (Left ("Variable '" ++ x ++ "' not found: " ++ show xs)) $ Right <$> Map.lookup x xs
+eval = undefined

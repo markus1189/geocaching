@@ -21,19 +21,24 @@ executable geocaching
                      , Geocaching.Crypto
                      , Geocaching.Formula
                      , Geocaching.Types
+                     , Geocaching.Parse
   -- other-extensions:
   build-depends:       base >=4.9 && <4.10
                      , bytestring
+                     , conduit
                      , containers
                      , either
                      , formatting
                      , lens
+                     , megaparsec
                      , optparse-applicative
-                     , parsec
+                     , resourcet
                      , split
                      , tagsoup
                      , text
                      , wreq
+                     , xml-conduit
+                     , xml-types
 
   hs-source-dirs:      src
   default-language:    Haskell2010

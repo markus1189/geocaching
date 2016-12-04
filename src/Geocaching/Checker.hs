@@ -33,14 +33,19 @@ urlParams (Url url) =
   where firstTwo [x,y] = (x,y)
         firstTwo _ = error "Unexpected :("
 
-checkCache :: S.Session -> Geocache -> CheckerCode -> Coordinate -> IO (Response BS.ByteString)
-checkCache sess (Geocache cache) (CheckerCode code) (Coord lat lon) =
-  S.post sess  "http://www.geochecker.com/index.php" ["LatString" := sformat fmtLat lat
-                                                     ,"LonString" := sformat fmtLon lon
-                                                     ,"code" := code
-                                                     ,"action" := ("confirm" :: Text)
-                                                     ,"wp" := cache
-                                                     ]
+--checkCache :: S.Session -> Geocache -> CheckerCode -> Coordinate -> IO (Response BS.ByteString)
+checkCache sess (Geocache cache) (CheckerCode code) (Coord lat lon) = do
+  r <- S.post sess  "http://www.geochecker.com/index.php" ["LatString" := sformat fmtLat lat
+                                                          ,"LonString" := sformat fmtLon lon
+                                                          ,"code" := code
+                                                          ,"action" := ("confirm" :: Text)
+                                                          ,"wp" := cache
+                                                          ]
+  let body = TS.parseTags (r ^. responseBody)
+  return . not $ TS.TagText "Incorrect" `elem` body
+
+xor :: Bool -> Bool -> Bool
+xor a b = a && not b || b && not a
 
 checker :: S.Session -> Geocache -> IO [Url]
 checker sess (Geocache cache) = do
