@@ -8,7 +8,6 @@ import Data.Function (on)
 import Data.Text (Text)
 import Data.XML.Types (Event, Name(..))
 import Text.XML.Stream.Parse
-import Debug.Trace (traceShowM)
 
 data Gpx = Gpx { _gpxMeta :: GpxMeta
                , _gpxWpts :: [Waypoint]
